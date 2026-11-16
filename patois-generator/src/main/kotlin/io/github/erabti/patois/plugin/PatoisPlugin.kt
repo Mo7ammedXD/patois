@@ -77,11 +77,9 @@ class PatoisPlugin : Plugin<Project> {
         extension.outputDir.convention(project.layout.buildDirectory.dir(Constants.DEFAULT_OUTPUT_DIR))
         extension.argumentPattern.convention(PatoisConfig.ArgumentPattern.CURLY_BRACES.name)
         extension.baseLocale.convention("")
-        val detectedPackage = PackageDetector.detectPackageFromSource(
-            project.file("src/main/kotlin")
-        ) ?: project.group.toString()
-
-        extension.packageName.convention(detectedPackage)
+        extension.packageName.convention(project.provider {
+            PackageDetector.detectPackageFromSource(project.file("src/main/kotlin")) ?: project.group.toString()
+        })
         extension.enumName.convention(Constants.DEFAULT_ENUM_NAME)
         extension.resolverName.convention(Constants.DEFAULT_RESOLVER_NAME)
         extension.hasKtorExtension.convention(hasPatoisKtorExtension(project))

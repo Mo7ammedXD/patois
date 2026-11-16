@@ -204,11 +204,10 @@ internal class KotlinGenerator(
                 addEnumConstant(translation.locale.enumCaseTag)
             }
 
-            addFunction(FunSpec.builder("toStrings").apply {
-                addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
-                returns(baseTranslationClassName)
+            addProperty(PropertySpec.builder("strings", baseTranslationClassName, KModifier.PRIVATE).apply {
                 val whenSpec = CodeBlock.builder()
-                whenSpec.beginControlFlow("return when(this)")
+                whenSpec.beginControlFlow("lazy")
+                whenSpec.beginControlFlow("when(this)")
                 for (translation in context.translations) {
                     val locale = translation.locale
                     whenSpec.addStatement(
@@ -219,7 +218,14 @@ internal class KotlinGenerator(
                     )
                 }
                 whenSpec.endControlFlow()
-                addCode(whenSpec.build())
+                whenSpec.endControlFlow()
+                delegate(whenSpec.build())
+            }.build())
+
+            addFunction(FunSpec.builder("toStrings").apply {
+                addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
+                returns(baseTranslationClassName)
+                addStatement("return strings")
             }.build())
 
             addProperty(PropertySpec.builder("config", LocalizationConfig::class).apply {
